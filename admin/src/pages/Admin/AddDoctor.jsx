@@ -43,9 +43,6 @@ const AddDoctor = () => {
       }
       const formData = new FormData();
 
-      if (!docImg) {
-        return toast.error("Image not selected");
-      }
       formData.append("image", docImg);
       formData.append("name", doctorData.name);
       formData.append("email", doctorData.email);
@@ -63,24 +60,39 @@ const AddDoctor = () => {
         })
       );
 
-      const { data } = await axios.post(
-        backendUrl + "/api/admin/add-doctor",
-        formData,
-        {
-          headers: { aToken },
-        }
-      );
+      try {
+        console.log("Sending request with token:", aToken);
+        const { data } = await axios.post(
+          backendUrl + "/api/admin/add-doctors",
+          formData,
+          {
+            headers: { 
+              atoken: aToken,
+              Authorization: `Bearer ${aToken}`
+            },
+          }
+        );
 
-      if (data.success) {
-        toast.success(data.message);
-        setDocImg(null);
-        setDoctorData(initialValues);
-      } else {
-        toast.error(data.message);
+        if (data.success) {
+          toast.success(data.message);
+          setDocImg(null);
+          setDoctorData(initialValues);
+        } else {
+          toast.error(data.message);
+        }
+      } catch (apiError) {
+        console.log("API error:", apiError);
+        if (apiError.code === "ERR_NETWORK") {
+          toast.error("Cannot connect to backend server. Please ensure the server is running.");
+        } else if (apiError.response) {
+          toast.error(apiError.response.data?.message || "Error adding doctor");
+        } else {
+          toast.error("An error occurred while adding the doctor");
+        }
       }
     } catch (error) {
       console.log("error:", error);
-      toast.error(error);
+      toast.error("Form submission error: " + error.message);
     }
   };
   return (

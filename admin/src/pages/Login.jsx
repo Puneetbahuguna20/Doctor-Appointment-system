@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { AdminContext } from "../context/AdminContext";
-import { DoctorContext } from "../context/DontorContext"; // Fixed typo: Don'torContext -> DoctorContext
+import { DoctorContext } from "../context/DoctorContext"; // Fixed typo: Don'torContext -> DoctorContext
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -53,7 +53,13 @@ const Login = () => {
       }
     } catch (error) {
       console.log("error:", error);
-      toast.error("Something went wrong. Please try again.");
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Login failed. Please check your credentials.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
     }
   };
 

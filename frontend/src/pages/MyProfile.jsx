@@ -35,7 +35,13 @@ const MyProfile = () => {
       }
     } catch (error) {
       console.log(error)
-      toast.error(error.message)
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Failed to update profile");
+      } else {
+        toast.error("An error occurred while updating your profile");
+      }
     }
   }
 

@@ -25,7 +25,13 @@ const AppContextProvider = (props) => {
     } catch (error) {
       console.log("No Doctor is fetched from backend");
       console.log("error:", error);
-      toast.error(error.message);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Failed to fetch doctors list");
+      } else {
+        toast.error("An error occurred while fetching doctors");
+      }
     }
   };
 
@@ -41,7 +47,13 @@ const AppContextProvider = (props) => {
       }
     } catch (error) {
       console.log("error:", error);
-      toast.error(error.message);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Failed to load user profile");
+      } else {
+        toast.error("An error occurred while loading your profile");
+      }
     }
   };
 
@@ -60,7 +72,13 @@ const AppContextProvider = (props) => {
       }
     } catch (error) {
       console.log("error:", error);
-      toast.error(error.message);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Failed to fetch your appointments");
+      } else {
+        toast.error("An error occurred while fetching your appointments");
+      }
     }
   };
 
@@ -95,6 +113,10 @@ const AppContextProvider = (props) => {
         return config;
       },
       (error) => {
+        setIsLoading(false);
+        if (error.message === "Network Error") {
+          console.log("Network error detected in interceptor");
+        }
         return Promise.reject(error);
       }
     );

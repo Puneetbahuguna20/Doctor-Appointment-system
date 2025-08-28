@@ -1,10 +1,28 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 export const AdminContext = createContext();
 
 const AdminContextProvider = (props) => {
+  // Get backend URL from environment variable or use a fallback
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  
+  // Add axios interceptor to handle network errors globally
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.message === 'Network Error') {
+          toast.error('Cannot connect to backend server. Please ensure the server is running.');
+        }
+        return Promise.reject(error);
+      }
+    );
+    
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
+  
   const [aToken, setAToken] = useState(
     localStorage.getItem("aToken") ? localStorage.getItem("aToken") : ""
   );
@@ -16,7 +34,10 @@ const AdminContextProvider = (props) => {
   const getAllDoctors = async () => {
     try {
       const { data } = await axios.get(backendUrl + "/api/admin/all-doctors", {
-        headers: { aToken },
+        headers: { 
+          atoken: aToken,
+          Authorization: `Bearer ${aToken}`
+        },
       });
       if (data.success) {
         console.log("data:", data);
@@ -25,7 +46,14 @@ const AdminContextProvider = (props) => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error);
+      console.log("error:", error);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Error fetching doctors");
+      } else {
+        toast.error("An error occurred while fetching doctors");
+      }
     }
   };
 
@@ -34,7 +62,10 @@ const AdminContextProvider = (props) => {
       const { data } = await axios.post(
         backendUrl + "/api/admin/change-availability",
         { docId },
-        { headers: { aToken } }
+        { headers: { 
+          atoken: aToken,
+          Authorization: `Bearer ${aToken}`
+        } }
       );
 
       if (data.success) {
@@ -45,7 +76,13 @@ const AdminContextProvider = (props) => {
       }
     } catch (error) {
       console.log("error:", error);
-      toast.error(error);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Error changing doctor availability");
+      } else {
+        toast.error("An error occurred while changing doctor availability");
+      }
     }
   };
 
@@ -53,7 +90,10 @@ const AdminContextProvider = (props) => {
     console.log("getAllAppointments:");
     try {
       const { data } = await axios.get(backendUrl + "/api/admin/appointments", {
-        headers: { aToken },
+        headers: { 
+          atoken: aToken,
+          Authorization: `Bearer ${aToken}`
+        },
       });
       if (data.success) {
         setAppointments(data.appointments);
@@ -63,7 +103,13 @@ const AdminContextProvider = (props) => {
       }
     } catch (error) {
       console.log("error:", error);
-      toast.error(error);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Error fetching appointments");
+      } else {
+        toast.error("An error occurred while fetching appointments");
+      }
     }
   };
 
@@ -83,7 +129,13 @@ const AdminContextProvider = (props) => {
       }
     } catch (error) {
       console.log("error:", error);
-      toast.error(error);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Error cancelling appointment");
+      } else {
+        toast.error("An error occurred while cancelling the appointment");
+      }
     }
   };
 
@@ -100,10 +152,16 @@ const AdminContextProvider = (props) => {
       }
     } catch (error) {
       console.log("error:", error);
-      toast.error(error);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Error fetching dashboard data");
+      } else {
+        toast.error("An error occurred while fetching dashboard data");
+      }
     }
   };
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  
   const value = {
     aToken,
     setAToken,

@@ -49,7 +49,13 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Login/Register Error:", error);
-      toast.error(error.response?.data?.message || "Something went wrong!");
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Login/Registration failed. Please check your credentials.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
     }
   };
 

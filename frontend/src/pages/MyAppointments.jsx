@@ -25,7 +25,13 @@ const MyAppointments = () => {
       }
     } catch (error) {
       console.log(error)
-      toast.error(error.message)
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Failed to cancel appointment");
+      } else {
+        toast.error("An error occurred while canceling your appointment");
+      }
     }
   }
 
@@ -73,7 +79,14 @@ const MyAppointments = () => {
             navigate('/my-appointments');
           }
         } catch (error) {
-          toast.error(error.message);
+          console.log("Razorpay verification error:", error);
+          if (error.code === "ERR_NETWORK") {
+            toast.error("Cannot connect to backend server. Please ensure the server is running.");
+          } else if (error.response) {
+            toast.error(error.response.data?.message || "Payment verification failed");
+          } else {
+            toast.error("An error occurred while verifying your payment");
+          }
         }
       },
     };
@@ -101,7 +114,13 @@ const MyAppointments = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      if (error.code === "ERR_NETWORK") {
+        toast.error("Cannot connect to backend server. Please ensure the server is running.");
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Failed to initiate payment");
+      } else {
+        toast.error("An error occurred while setting up payment");
+      }
     }
   };
   

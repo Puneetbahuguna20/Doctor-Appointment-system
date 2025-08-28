@@ -56,6 +56,13 @@ const AppContextProvider = (props) => {
       },
       (error) => {
         setIsLoading(false); // Reset loading state on error as well
+        
+        // Handle network errors gracefully
+        if (error.message === 'Network Error') {
+          console.error('Network error occurred:', error);
+          // We don't show toast here as it's already handled in AdminContext
+        }
+        
         return Promise.reject(error);
       }
     );
